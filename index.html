@@ -46,14 +46,14 @@
             <input type="submit" value='Save' onclick="return validateForm()"/>
         </form>
        <h3><a href="http://wiki.nebarnix.com/wiki/Img2gco">Full Documentation</a></h3>
-       <p> <b>About this tool:</b> This tool was created because I could not find any useable image to gcode converters suitable for lasers based on 3D printers.
-        It assumes that your fan PWM (M106 Sxxx) is used to drive a TTL driver.</p>
+       <p> <b>About this tool:</b> This tool was created because I could not find any useable image to gcode converters suitable for lasers based on grbl.
+        It assumes that your laser is controlled using the variable spindle PWM pin and M3 (activate) and M5 (deactivate) as well as S[value] to control your laser. For your gCode senders sake I removed all the whitespaces in between codes. This greatly improves sending performance and you should be able to run higher speeds.</p>
 
         <p> <b>Laser Power and Speed:</b>You should set laser min to a level just below where it makes a mark on
         your given material and the laser max to a level where it makes a nice black mark and where increasing power does not make the mark any darker.
         Trial and error is certainly required here, so please test your material BEFORE you ruin that nice thing you were trying to make.</p>
 
-        <p><b>A note on commands per second:</b> My Printrboard can handle about 280 commands per second over USB and about 380 when printing from the SDcard.
+        <p><b>A note on commands per second:</b> My grbl can handle quite a lot of commands per so that I can run at least 330 commands per second over USB. This strongly depends on the gCode sender which is system speed dependant if not pulled from an SD card. Please don't do anything major on your system while an image is engraved. It can leave ugly marks on your piece when the laser head suddenly stalls because it waits for the next command and the buffer ran empty. This is also a possible cause for fire!<br>
         This is somewhat abstracted to this program only because commands can vary considerably in length.</p>
     </body>
 </html>
