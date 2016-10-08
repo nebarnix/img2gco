@@ -13,6 +13,7 @@ _**This version implements**_
 
 _**Todo:**_
 
+- [ ] Add feedrate dependent engraving in combination with laser intensity for darker blacks and whiter whites on certain materials like wood
 - [ ] Add gCodes to the web-form so that they can be adapted to any machine without changing code
 - [ ] Add customized start and end gCodes
 - [ ] Finish calibration script (currently left dangling who knows what state its in)
