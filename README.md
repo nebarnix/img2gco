@@ -13,6 +13,8 @@ _**This version implements**_
 
 _**Todo:**_
 
+- [ ] Add gCodes to the web-form so that they can be adapted to any machine without changing code
+- [ ] Add customized start and end gCodes
 - [ ] Finish calibration script (currently left dangling who knows what state its in)
 - [ ] Add areas that are above the white clip boundary to preview where skip-overs will be 
 - [ ] Define width and height of resulting engraving separately
