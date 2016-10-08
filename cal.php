@@ -70,7 +70,7 @@ if (isset($_FILES['image']['name']))
         //case "image/jpeg": // Both regular and progressive jpegs
         //case "image/pjpeg": $src = imagecreatefromjpeg($saveto); break;
         //case "image/png": $src = imagecreatefrompng($saveto); break;
-        
+
         case "image/gif": $src = imagecreatefromgif($_FILES['image']['tmp_name']); break;
         case "image/jpeg": // Both regular and progressive jpegs
         case "image/pjpeg": $src = imagecreatefromjpeg($_FILES['image']['tmp_name']); break;
@@ -78,11 +78,11 @@ if (isset($_FILES['image']['name']))
         default: $typeok = FALSE; break;
     }
     if ($typeok)
-    { 
+    {
        //print ";image OK\n";
        //list($w, $h) = getimagesize($saveto);
        list($w, $h) = getimagesize($_FILES['image']['tmp_name']);
-       
+
     }
     else
       exit();
@@ -94,15 +94,15 @@ else
 //header('Content-Type: text/plain; charset=utf-8');
 
 
-$laserMax=$_POST['LaserMax'];//$laserMax=65; //out of 255
-$laserMin=$_POST['LaserMin']; //$laserMin=20; //out of 255
-$laserOff=$_POST['LaserOff'];//$laserOff=13; //out of 255
+$laserMax=$_POST['LaserMax'];//$laserMax=200; //out of 255
+$laserMin=$_POST['LaserMin']; //$laserMin=60; //out of 255
+$laserOff=$_POST['LaserOff'];//$laserOff=0; //out of 255
 $whiteLevel=$_POST['whiteLevel']
 
 $tuneMin=$_POST['tuneMin'];
 $tuneMax=$_POST['tuneMax'];
 
-$feedRate = $_POST['feedRate'];//$feedRate = 800; //in mm/sec
+$feedRate = $_POST['feedRate'];//$feedRate = 3000; //in mm/sec
 $travelRate = $_POST['travelRate'];//$travelRate = 3000;
 
 $overScan = $_POST['overScan'];//$overScan = 3;
@@ -118,7 +118,7 @@ $resX=$_POST['resX'];;//$resX=.1;
 $pixelsX = round($sizeX/$resX);
 $pixelsY = round($sizeY/$scanGap);
 
-$tmp = imagecreatetruecolor($pixelsX, $pixelsY);      
+$tmp = imagecreatetruecolor($pixelsX, $pixelsY);
 imagecopyresampled($tmp, $src, 0, 0, 0, 0, $pixelsX, $pixelsY, $w, $h);
 flipMyImage($tmp);
 imagefilter($tmp,IMG_FILTER_GRAYSCALE);
@@ -128,8 +128,8 @@ imagefilter($tmp,IMG_FILTER_GRAYSCALE);
 header('Content-Type: image/jpeg'); //do this to display following image
 imagejpeg($tmp); //show image
 imagedestroy($tmp);
-imagedestroy($src);        
-exit(); //exit if above */         
+imagedestroy($src);
+exit(); //exit if above */
 
 header("Content-Disposition: attachment; filename=cal.gcode");
 
@@ -141,33 +141,34 @@ $cmdRate = round(($feedRate/$resX)*2/60);
 print(";Speed is $feedRate mm/min, $resX mm/pix => $cmdRate lines/sec\n");
 print(";Power is $laserMin to $laserMax (". round($laserMin/255*100,1) ."%-". round($laserMax/255*100,1) ."%)\n");
 
-//fill up a depthmap 
+//fill up a depthmap
 //DELETEME
 /*
 $lineIndex=0;
 for($line=$offsetY; $line < ($sizeY+$offsetY); $line+=$scanGap)
    {
-   $pixelIndex=0;   
+   $pixelIndex=0;
    for($pixel=$offsetX; $pixel<($sizeX+$offsetX); $pixel+=$resX)
-      {      
+      {
       imagecolorat($tmp,$lineIndex,$pixelIndex) = rand(0,65535);
       //print(imagecolorat($tmp,$lineIndex,$pixelIndex));
       $pixelIndex++;
       }
-   $lineIndex++;   
+   $lineIndex++;
    }
 $lineIndex--;
 
 
 print(";Verified size iin pixels X=$pixelIndex, Y=$lineIndex\n");*/
+
 print("G21\n");
-print("M106 S$laserOff; Turn laser off\n");
+print("M3 S$laserOff; Turn laser off\n");
 print("G1 F$feedRate\n");
 
 $lineIndex=0;
 print("G0 X$offsetX Y$offsetY F$travelRate\n");
 for($line=$offsetY; $line<($sizeY+$offsetY); $line+=$scanGap)
-   {  
+   {
    //analyze the row and find first and last nonwhite pixels
    $pixelIndex=0;
    $firstX = 0;
@@ -180,48 +181,48 @@ for($line=$offsetY; $line<($sizeY+$offsetY); $line+=$scanGap)
          {
          if($firstX == 0)
             $firstX = $pixelIndex;
-         
-         $lastX = $pixelIndex;         
+
+         $lastX = $pixelIndex;
          }
       }
-      
+
    $pixelIndex=$firstX;
-   for($pixel=$offsetX+$firstX*$resX; $pixel < ($sizeX+$offsetX); $pixel+=$resX)
+   for($pixel = $offsetX + $firstX * $resX; $pixel < ($sizeX + $offsetX); $pixel += $resX)
       {
       if($pixelIndex == $lastX)
          break;
       if($pixelIndex == $firstX)
-         {            
-         print("G1 X".round($pixel-$overScan,4)." Y".round($line,4)." F$travelRate\n");
+         {
+         print("G1 X".round($pixel - $overScan, 4)." Y".round($line, 4)." F$travelRate\n");
          print("G1 F$feedRate\n");
-         print("G1 X".round($pixel,4)." Y".round($line,4)."\n");
+         print("G1 X".round($pixel, 4)." Y".round($line,4)."\n");
          }
       else
-         //print("G1 X".round($pixel,4)." Y".round($line,4)."\n");
-         print("G1 X".round($pixel,4)."\n");
-   
+         //print("G1 X".round($pixel, 4)." Y".round($line,4)."\n");
+         print("G1 X".round($pixel, 4).);
+
       //print("($line,$pixel,".imagecolorat($tmp,$lineIndex,$pixelIndex).")\n");
       $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex);
       $value = ($rgb >> 16) & 0xFF;
-      $value = round(map($value,255,0,$laserMin,$laserMax),4);
-      print("M106 S$value\n");
+      $value = round(map($value, 255, 0, $laserMin, $laserMax),4);
+      print("S$value\n");
       $pixelIndex++;
       }
-   print("M106 S$laserOff;\n\n");      
+   print("M5 S$laserOff;\n\n");
    $lineIndex++;
    if($tuneMin == 1)
       $laserMin += 0.5;
-   
+
    if($tuneMax == 1)
       $laserMax -= 0.5;
-   
+
    if($laserMin >= $laserMax)
       break;
    }
-   
+
 $lineIndex--;
 
-print("M106 S$laserOff ;Turn laser off\n");
-print("G0 X$offsetX Y$offsetY F$travelRate ;Go home\n");
+print("M5 S$laserOff ;Turn laser off\n");
+//print("G0 X$offsetX Y$offsetY F$travelRate ;Go home\n");
 imagedestroy($tmp);
 ?>
