@@ -267,12 +267,13 @@ for($line = $offsetY; $line < ($sizeY + $offsetY); $line += $scanGap)
 	   }
    }
    if ($firstX > 0 && $lastX > 0)
-      print("M5 S$laserOff;\n\n");
+      print("M5 S$laserOff\n\n");
    $lineIndex++;
 }
 $lineIndex--;
 
 print("M5 S$laserOff ;Turn laser off\n");
-print("G0 X$offsetX Y$offsetY F$travelRate ;Go home\n");
+//print("G1 X$offsetX Y$offsetY F$travelRate ;Go home\n");
+print("G1 X0 Y0 F$travelRate ;Go home\n");
 imagedestroy($tmp);
 ?>
