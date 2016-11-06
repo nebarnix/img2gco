@@ -267,7 +267,7 @@ for($line = $offsetY; $line < ($sizeY + $offsetY); $line += $scanGap)
 	   }
    }
    if ($firstX > 0 && $lastX > 0)
-      print("M5 S$laserOff\n\n");
+      print("M3 S$laserOff\n\n");
    $lineIndex++;
 }
 $lineIndex--;
