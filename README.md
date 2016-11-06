@@ -1,12 +1,25 @@
 # img2gco
-Image to reprap gcode converter
+Image to grbl compliant gcode converter
 
+This is a modified version from the original which is described here:
 See http://wiki.nebarnix.com/wiki/Img2gco for overall project details!
 
-Todo:
-- [ ] Implement bi-directional etching
+This mod contains the following features in addition to the original ones:
+
+_**This version implements**_
+
+- [X] Implement bi-directional etching
+- [X] Optimizations of gCode to be compliant with grbl which I use to run my Chinese K40 laser with great success
+
+_**Todo:**_
+
+- [ ] Add feedrate dependent engraving in combination with laser intensity for darker blacks and whiter whites on certain materials like wood
+- [ ] Add gCodes to the web-form so that they can be adapted to any machine without changing code
+- [ ] Add customized start and end gCodes
 - [ ] Finish calibration script (currently left dangling who knows what state its in)
 - [ ] Add areas that are above the white clip boundary to preview where skip-overs will be 
+- [ ] Define width and height of resulting engraving separately
+- [ ] Define origin of coordinate system for easier adaptation to different laser engravers
 
 Usage details:
 * Laser Min Power [0-255]: - This is the laser power that corresponds to WHITE

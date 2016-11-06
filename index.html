@@ -1,4 +1,4 @@
-<html>    
+<html>
     <head>
         <script>
             function validateForm(){
@@ -11,11 +11,11 @@
                 if(name =='')
                 {
                     return false;
-                } 
-                else 
+                }
+                else
                 {
                     return true;
-                } 
+                }
                 return false;
             }
         </script>
@@ -23,37 +23,37 @@
 
     <body>
         <form method="post" action="gcode.php" enctype="multipart/form-data">
-            Laser Min Power [0-255]: <input type="text" value="22" name="LaserMin" size="8"/><br />
-            Laser Max Power [0-255]: <input type="text" value="65" name="LaserMax" size="8"/><br />
-            Laser 'Off' Power [0-255]: <input type="text" value="13" name="LaserOff" size="8"/><br />
+            Laser Min Power [0-255]: <input type="text" value="40" name="LaserMin" size="8"/><br />
+            Laser Max Power [0-255]: <input type="text" value="250" name="LaserMax" size="8"/><br />
+            Laser 'Off' Power [0-255]: <input type="text" value="0" name="LaserOff" size="8"/><br />
             Skip over values above [0-255]: <input type="text" value="253" name="whiteLevel" size="8"/><br />
-            
+
             Travel (noncutting) Rate [mm/min]: <input type="text" value="3000" name="travelRate" size="8"/><br />
-            Scan (cutting) Rate [mm/min]: <input type="text" value="800" name="feedRate" size="8"/><br />
-            
+            Scan (cutting) Rate [mm/min]: <input type="text" value="2000" name="feedRate" size="8"/><br />
+
             Overscan Distance (prevents twang from showing) [mm]: <input value="3" type="text" name="overScan" size="8"/><br />
-            
-            Height (width autocalculated) [mm]: <input type="text" name="sizeY" size="8"/><br />
+
+            Height (width autocalculated) [mm]: <input value="50" type="text" name="sizeY" size="8"/><br />
             Horizontal Resolution [mm/pixel]: <input value="0.1" type="text" name="resX" size="8"/><br />
             Scangap [mm/line]: <input type="text" value="0.1" name="scanGap" size="8"/><br />
             Start X [mm from 0 for right of image]: <input value="25" type="text" name="offsetX" size="8"/><br />
             Start Y [mm from 0 for top of image]: <input value="25" type="text" name="offsetY" size="8"/><br />
             Image File: <input type="file" accept="image/*" name="image" id="image" /><br />
-            Output: 
+            Output:
             <input type="radio" name="preview" value="0" checked="checked" >Gcode
             <input type="radio" name="preview" value="1">Grayscale Preview
             <input type="radio" name="preview" value="2">White-level Preview (test, may not work yet)<br />
-            <input type="submit" value='Save' onclick="return validateForm()"/>            
+            <input type="submit" value='Save' onclick="return validateForm()"/>
         </form>
        <h3><a href="http://wiki.nebarnix.com/wiki/Img2gco">Full Documentation</a></h3>
-       <p> <b>About this tool:</b> This tool was created because I could not find any useable image to gcode converters suitable for lasers based on 3D printers. 
-        It assumes that your fan PWM (M106 Sxxx) is used to drive a TTL driver.</p> 
-        
-        <p> <b>Laser Power and Speed:</b>You should set laser min to a level just below where it makes a mark on 
+       <p> <b>About this tool:</b> This tool was created because I could not find any useable image to gcode converters suitable for lasers based on grbl.
+        It assumes that your laser is controlled using the variable spindle PWM pin and M3 (activate) and M5 (deactivate) as well as S[value] to control your laser. For your gCode senders sake I removed all the whitespaces in between codes. This greatly improves sending performance and you should be able to run higher speeds.</p>
+
+        <p> <b>Laser Power and Speed:</b>You should set laser min to a level just below where it makes a mark on
         your given material and the laser max to a level where it makes a nice black mark and where increasing power does not make the mark any darker.
         Trial and error is certainly required here, so please test your material BEFORE you ruin that nice thing you were trying to make.</p>
-        
-        <p><b>A note on commands per second:</b> My Printrboard can handle about 280 commands per second over USB and about 380 when printing from the SDcard. 
-        This is somewhat abstracted to this program only because commands can vary considerably in length.</p> 
+
+        <p><b>A note on commands per second:</b> My grbl can handle quite a lot of commands per so that I can run at least 330 commands per second over USB. This strongly depends on the gCode sender which is system speed dependant if not pulled from an SD card. Please don't do anything major on your system while an image is engraved. It can leave ugly marks on your piece when the laser head suddenly stalls because it waits for the next command and the buffer ran empty. This is also a possible cause for fire!<br>
+        This is somewhat abstracted to this program only because commands can vary considerably in length.</p>
     </body>
 </html>
