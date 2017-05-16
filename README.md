@@ -4,6 +4,7 @@ Image to reprap gcode converter
 See http://wiki.nebarnix.com/wiki/Img2gco for overall project details!
 
 Todo:
+- [ ] Change to relative coordinates for ease of fine positioning
 - [ ] Implement bi-directional etching
 - [ ] Finish calibration script (currently left dangling who knows what state its in)
 - [ ] Add areas that are above the white clip boundary to preview where skip-overs will be 
