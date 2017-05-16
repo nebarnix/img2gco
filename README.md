@@ -4,6 +4,7 @@ Image to reprap gcode converter
 See http://wiki.nebarnix.com/wiki/Img2gco for overall project details!
 
 Todo:
+- [ ] Generated bounding box code at start of print
 - [ ] Change to relative coordinates for ease of fine positioning
 - [ ] Implement bi-directional etching
 - [ ] Finish calibration script (currently left dangling who knows what state its in)
