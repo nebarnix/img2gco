@@ -117,10 +117,11 @@ $offsetX=$_POST['offsetX'];//$offsetX=5;
 $sizeX=$sizeY*$w/$h; //SET A HEIGHT AND CALC WIDTH (this should be customizable)
 $resX=$_POST['resX'];;//$resX=.1;
 
+//Create a resampled image with exactly the data needed, 1px in to 1px out
 $pixelsX = round($sizeX/$resX);
 $pixelsY = round($sizeY/$scanGap);
 
-$tmp = imagecreatetruecolor($pixelsX, $pixelsY);      
+$tmp = imagecreatetruecolor($pixelsX, $pixelsY);
 imagecopyresampled($tmp, $src, 0, 0, 0, 0, $pixelsX, $pixelsY, $w, $h);
 flipMyImage($tmp);
 imagefilter($tmp,IMG_FILTER_GRAYSCALE);
@@ -140,6 +141,7 @@ print("\n;Created using Nebarnix's IMG2GCO program Ver 1.0\n");
 print(";http://nebarnix.com 2015\n");
 
 print(";Size in pixels X=$pixelsX, Y=$pixelsY\n");
+print(";Size in mm X=".round($sizeX,2).", Y=".round($sizeY,2)."\n");
 $cmdRate = round(($feedRate/$resX)*2/60);
 print(";Speed is $feedRate mm/min, $resX mm/pix => $cmdRate lines/sec\n");
 print(";Power is $laserMin to $laserMax (". round($laserMin/255*100,1) ."%-". round($laserMax/255*100,1) ."%)\n");
@@ -165,57 +167,75 @@ $lineIndex--;
 print(";Verified size iin pixels X=$pixelIndex, Y=$lineIndex\n");*/
 print("G21\n");
 print("M106 S$laserOff; Turn laser off\n");
+$prevValue = $laserOff; //Clear out the 'previous value' comparison
 print("G1 F$feedRate\n");
 
+print("G0 X$offsetX Y$offsetY F$travelRate\n"); //travel to start coordinates (upper right of image)
+
+//loop through the lines
 $lineIndex=0;
-print("G0 X$offsetX Y$offsetY F$travelRate\n");
-for($line=$offsetY; $line<($sizeY+$offsetY); $line+=$scanGap)
+for($line=$offsetY; $line<($sizeY+$offsetY) && $lineIndex < $pixelsY; $line+=$scanGap)
    {  
    //analyze the row and find first and last nonwhite pixels
-   $pixelIndex=0;
-   $firstX = 0;
-   $lastX = 0;
+   $firstX = -1; //initialize to impossible value
+   $lastX = -1; //initialize to impossible value
    for($pixelIndex=0; $pixelIndex < $pixelsX; $pixelIndex++)
       {
-      $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex);
-      $value = ($rgb >> 16) & 0xFF;
-      if($value < $whiteLevel) //Nonwhite image parts
+      $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex); //Grab the pixel color
+      $value = ($rgb >> 16) & 0xFF; //Convert to 8 bit value
+      if($value < $whiteLevel) //If image data (IE nonwhite)
          {
-         if($firstX == 0)
+         if($firstX == -1) //mark this as the first nonwhite pixel
             $firstX = $pixelIndex;
          
-         $lastX = $pixelIndex;         
+         $lastX = $pixelIndex; //Track the last seen nonwhite pixel
          }
       }
-      
-   $pixelIndex=$firstX;
-   for($pixel=$offsetX+$firstX*$resX; $pixel < ($sizeX+$offsetX); $pixel+=$resX)
+
+   //if there are no Nonwhite pixels we can just skip this line altogether
+   if($lastX < 0 || $firstX < 0)
       {
+      print(";Line $lineIndex Skipped $lastX $firstX\n");
+      $lineIndex++; //Next line GO!
+      continue;
+      }
+
+   $pixelIndex=$firstX; //Start at the first nonwhite pixel
+   for($pixel=$offsetX+$firstX*$resX; $pixel < ($sizeX+$offsetX) && $pixelIndex < $pixelsX; $pixel+=$resX)
+      {
+      //abort the loop early if there are no more nonwhite pixels
       if($pixelIndex == $lastX)
+         {
+         print(";Skip The Rest\n");
          break;
+         }
+
+      //If this is the first nonwhite pixel we have to move to the correct line, remembering the overscan offset
       if($pixelIndex == $firstX)
          {            
-         print("G1 X".round($pixel-$overScan,4)." Y".round($line,4)." F$travelRate\n");
-         print("G1 F$feedRate\n");
-         print("G1 X".round($pixel,4)." Y".round($line,4)."\n");
+         print("G1X".round($pixel-$overScan,4)." Y".round($line,4)." F$travelRate\n"); //travel quickly to the line start position
+         print("G1F$feedRate\n"); //Set travel speed to the right speed for etching
+         print("G1X".round($pixel,4)." Y".round($line,4)."\n"); //Do move
          }
       else
-         //print("G1 X".round($pixel,4)." Y".round($line,4)."\n");
-         print("G1 X".round($pixel,4)."\n");
-   
-      //print("($line,$pixel,".imagecolorat($tmp,$lineIndex,$pixelIndex).")\n");
-      $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex);
-      $value = ($rgb >> 16) & 0xFF;
-      $value = round(map($value,255,0,$laserMin,$laserMax),4);
-      print("M106 S$value\n");
-      $pixelIndex++;
+         print("G1X".round($pixel,4)."\n"); //Continue moving
+         
+      $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex); //grab the pixel value
+      $value = ($rgb >> 16) & 0xFF; //convert pixel to 8bit color
+      $value = round(map($value,255,0,$laserMin,$laserMax),1); //map 8bit range to our laser range
+       
+      if($value != $prevValue) //Is the laser power different? no need to send the same power again
+         print("M106S$value\n"); //Write out the laser value
+      $prevValue = $value; //Save the laser power for the next loop
+      $pixelIndex++; //Next pixel GO!
       }
-   print("M106 S$laserOff;\n\n");      
-   $lineIndex++;
+   print("M106S$laserOff;\n\n"); //Turn off the power for the re-trace
+   $prevValue = $laserOff; //Clear out the 'previous value' comparison 
+   $lineIndex++; //Next line GO!
    }
-$lineIndex--;
+$lineIndex--; //Undo one for debugging porpoises
 
 print("M106 S$laserOff ;Turn laser off\n");
-print("G0 X$offsetX Y$offsetY F$travelRate ;Go home\n");
+print("G0 X$offsetX Y$offsetY F$travelRate ;Go home to start position\n");
 imagedestroy($tmp);
 ?>
