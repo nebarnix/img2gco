@@ -213,23 +213,23 @@ for($line=$offsetY; $line<($sizeY+$offsetY) && $lineIndex < $pixelsY; $line+=$sc
       //If this is the first nonwhite pixel we have to move to the correct line, remembering the overscan offset
       if($pixelIndex == $firstX)
          {            
-         print("G1X".round($pixel-$overScan,4)." Y".round($line,4)." F$travelRate\n"); //travel quickly to the line start position
-         print("G1F$feedRate\n"); //Set travel speed to the right speed for etching
-         print("G1X".round($pixel,4)." Y".round($line,4)."\n"); //Do move
+         print("G1 X".round($pixel-$overScan,4)." Y".round($line,4)." F$travelRate\n"); //travel quickly to the line start position
+         print("G1 F$feedRate\n"); //Set travel speed to the right speed for etching
+         print("G1 X".round($pixel,4)." Y".round($line,4)."\n"); //Do move
          }
       else
-         print("G1X".round($pixel,4)."\n"); //Continue moving
+         print("G1 X".round($pixel,4)."\n"); //Continue moving
          
       $rgb = imagecolorat($tmp,$pixelIndex,$lineIndex); //grab the pixel value
       $value = ($rgb >> 16) & 0xFF; //convert pixel to 8bit color
       $value = round(map($value,255,0,$laserMin,$laserMax),1); //map 8bit range to our laser range
        
       if($value != $prevValue) //Is the laser power different? no need to send the same power again
-         print("M106S$value\n"); //Write out the laser value
+         print("M106 S$value\n"); //Write out the laser value
       $prevValue = $value; //Save the laser power for the next loop
       $pixelIndex++; //Next pixel GO!
       }
-   print("M106S$laserOff;\n\n"); //Turn off the power for the re-trace
+   print("M106 S$laserOff;\n\n"); //Turn off the power for the re-trace
    $prevValue = $laserOff; //Clear out the 'previous value' comparison 
    $lineIndex++; //Next line GO!
    }
